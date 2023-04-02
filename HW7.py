@@ -53,7 +53,38 @@ def make_positions_table(data, cur, conn):
 #     created for you -- see make_positions_table above for details.
 
 def make_players_table(data, cur, conn):
-    pass
+    player_list  = data.get("squad")
+    id_ = list()
+    name = list()
+    position = list()
+    year = list()
+    nationality = list()
+    for player in player_list:
+        idd = player.get("id")
+        namem = player.get("name")
+        positionn = player.get("position")
+        dateOfBirthh = player.get("dateOfBirth")
+        yearr = int(dateOfBirthh[0:4])
+        nationalityy = player.get("nationality")
+        id_.append(int(idd))
+        name.append(namem)
+        position.append(positionn)
+        year.append(yearr)
+        nationality.append(nationalityy)
+
+    cur.execute('CREATE TABLE IF NOT EXISTS Players ( id INT PRIMARY KEY, name TEXT, position_id INT,birthyear INT,nationality TEXT  )')
+    conn.commit()
+    for i in range(len(id_)):
+        cur.execute('''
+        INSERT INTO Players (id, name,position_id,birthyear,nationality  ) VALUES(?,?,?,?,?)
+        ''',(id_[i],name[i],position[i],year[i],nationality[i]))
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+
+
+
 
 ## [TASK 2]: 10 points
 # Finish the function nationality_search
