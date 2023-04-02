@@ -1,8 +1,8 @@
 
-# Your name:
-# Your student id:
-# Your email:
-# List who you have worked with on this project:
+# Your name: Kunkun Hu
+# Your student id: 95517506
+# Your email: kunkun@umich.edu
+# List who you have worked with on this project: None
 
 import unittest
 import sqlite3
