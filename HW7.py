@@ -56,40 +56,35 @@ def make_players_table(data, cur, conn):
     player_list  = data.get("squad")
     id_ = list()
     name = list()
-    position = list()
+    position_id = list()
     year = list()
     nationality = list()
     for player in player_list:
         idd = player.get("id")
         namem = player.get("name")
         positionn = player.get("position")
+        cur.execute('''
+        SELECT id FROM Positions WHERE position = ?
+        ''',(positionn,))
+        position_idd = cur.fetchone()[0]
+
         dateOfBirthh = player.get("dateOfBirth")
         yearr = int(dateOfBirthh[0:4])
         nationalityy = player.get("nationality")
         id_.append(int(idd))
         name.append(namem)
-        position.append(positionn)
+        position_id.append(position_idd)
         year.append(yearr)
         nationality.append(nationalityy)
     cur.execute('DROP TABLE IF EXISTS Players')
     cur.execute('CREATE TABLE IF NOT EXISTS Players ( id INT PRIMARY KEY, name TEXT, position_id INT,birthyear INT,nationality TEXT  )')
+
     conn.commit()
     for i in range(len(id_)):
-        posi = position[i]
-        if posi == "Goalkeeper":
-            posi_id = 0
-        elif posi == "Defence":
-            posi_id = 1
-        elif posi == "Midfield":
-            posi_id = 2
-        elif posi == "Offence":
-            posi_id = 3
-        else:
-            posi_id = 4
 
         cur.execute('''
         INSERT INTO Players (id, name,position_id,birthyear,nationality  ) VALUES(?,?,?,?,?)
-        ''',(id_[i],name[i],posi_id,year[i],nationality[i]))
+        ''',(id_[i],name[i],position_id[i],year[i],nationality[i]))
 
     conn.commit()
     cur.close()
@@ -232,7 +227,23 @@ def position_birth_search(position, age, cur, conn):
 #     the passed year. 
 
 def make_winners_table(data, cur, conn):
-    pass
+    seasons = data.get("seasons")
+    idlist = list()
+    namelist = list()
+    for season in seasons:
+        winner = season.get("winner")
+        if winner != None:
+            idd = winner.get("id")
+            idlist.append(idd)
+            name = winner.get("name")
+            namelist.append(name)
+    cur.execute("CREATE TABLE IF NOT EXISTS Winners (id INTEGER PRIMARY KEY, name TEXT UNIQUE)")
+
+    for i in range(len(idlist)):
+        cur.execute("INSERT OR IGNORE INTO Winners (id, name) VALUES (?,?)",(idlist[i], namelist[i]))
+    conn.commit()
+
+
 
 def make_seasons_table(data, cur, conn):
     pass
@@ -296,8 +307,10 @@ class TestAllMethods(unittest.TestCase):
     def test_make_winners_table(self):
         self.cur2.execute('SELECT * from Winners')
         winners_list = self.cur2.fetchall()
-
-        pass
+        self.assertEqual(len(winners_list), 7)
+        self.assertEqual(winners_list[0][0], 57)
+        self.assertEqual(winners_list[6], (338, 'Leicester City FC'))
+        
 
     def test_make_seasons_table(self):
         self.cur2.execute('SELECT * from Seasons')
