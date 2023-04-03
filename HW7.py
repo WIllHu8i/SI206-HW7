@@ -71,6 +71,7 @@ def make_players_table(data, cur, conn):
         position.append(positionn)
         year.append(yearr)
         nationality.append(nationalityy)
+    cur.execute('DROP TABLE IF EXISTS Players')
     cur.execute('CREATE TABLE IF NOT EXISTS Players ( id INT PRIMARY KEY, name TEXT, position_id INT,birthyear INT,nationality TEXT  )')
     conn.commit()
     for i in range(len(id_)):
@@ -109,7 +110,20 @@ def make_players_table(data, cur, conn):
         # the player's name, their position_id, and their nationality.
 
 def nationality_search(countries, cur, conn):
-    pass
+    return_list = list()
+    for country in countries:
+        cur.execute('''
+        SELECT name, position_id, nationality FROM Players WHERE nationality = ?
+        ''',(country,))
+        rows = cur.fetchall()
+        for row in rows:
+            return_list.append((row[0],row[1],row[2]))
+    return(return_list)
+
+
+
+
+
 
 ## [TASK 3]: 10 points
 # finish the function birthyear_nationality_search
@@ -128,7 +142,19 @@ def nationality_search(countries, cur, conn):
 
 
 def birthyear_nationality_search(age, country, cur, conn):
-    pass
+    year = 2023 - age
+    return_list = list()
+    cur.execute('''
+    SELECT name,nationality, birthyear FROM Players WHERE nationality = ? AND birthyear<?
+    ''',(country,year))
+
+    rows = cur.fetchall()
+    for row in rows:
+        return_list.append((row[0],row[1],row[2]))
+    return(return_list)
+
+
+
 
 ## [TASK 4]: 15 points
 # finish the function position_birth_search
@@ -148,7 +174,26 @@ def birthyear_nationality_search(age, country, cur, conn):
     # HINT: You'll have to use JOIN for this task.
 
 def position_birth_search(position, age, cur, conn):
-       pass
+    year = 2023 - age
+    return_list = list()
+    cur.execute('''
+       SELECT Players.name, Positions.position,Players.birthyear FROM Players JOIN Positions ON Positions.position = ? AND Players.birthyear>?
+       ''',(position,year) )
+
+    rows = cur.fetchall()
+    for row in rows:     
+        return_list.append(row)
+    return return_list
+
+ 
+        
+           
+
+
+           
+
+        
+       
 
 
 # [EXTRA CREDIT]
