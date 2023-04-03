@@ -232,11 +232,12 @@ def make_winners_table(data, cur, conn):
     namelist = list()
     for season in seasons:
         winner = season.get("winner")
-        if winner != None:
+        if winner is not None:
             idd = winner.get("id")
             idlist.append(idd)
             name = winner.get("name")
             namelist.append(name)
+    cur.execute('DROP TABLE IF EXISTS Winners')
     cur.execute("CREATE TABLE IF NOT EXISTS Winners (id INTEGER PRIMARY KEY, name TEXT UNIQUE)")
 
     for i in range(len(idlist)):
@@ -246,10 +247,48 @@ def make_winners_table(data, cur, conn):
 
 
 def make_seasons_table(data, cur, conn):
-    pass
+    seasons = data.get("seasons")
+    idlist = list()
+    end_yearlist = list()
+    winner_idlist = list()
+    for season in seasons:
+        winner = season.get("winner")
+        idd = season.get("id")
+        end_year = int(season.get("endDate")[:4])
+        if winner is not None:
+            winner_id = winner.get("id")
+            cur.execute('''
+            SELECT name FROM Winners WHERE id = ?
+            ''',(winner_id,))
+            name = cur.fetchone()[0]
+            idlist.append(idd)
+            end_yearlist.append(end_year)
+            winner_idlist.append(name)
+    cur.execute('DROP TABLE IF EXISTS Seasons')
+    cur.execute("CREATE TABLE IF NOT EXISTS Seasons (id INTEGER PRIMARY KEY, winner_id TEXT, end_year INT)")
+    for i in range(len(idlist)):
+        cur.execute('''
+        INSERT INTO Seasons(id,winner_id,end_year) VALUES(?,?,?)
+        ''',(idlist[i],winner_idlist[i],end_yearlist[i]))
+    conn.commit()
+
+
+
+
+
+
+
+    
 
 def winners_since_search(year, cur, conn):
-    pass
+    cur.execute('''
+    SELECT winner_id FROM Seasons WHERE end_year > ?
+    ''',(year,))
+    rows = cur.fetchall()
+    dic = dict()
+    for row in rows:
+        dic[row[0]] = dic.get(row[0],0)+1
+    return(dic)
 
 
 class TestAllMethods(unittest.TestCase):
@@ -315,12 +354,20 @@ class TestAllMethods(unittest.TestCase):
     def test_make_seasons_table(self):
         self.cur2.execute('SELECT * from Seasons')
         seasons_list = self.cur2.fetchall()
+        self.assertEqual(seasons_list[0][1], 'Manchester City FC')
+        self.assertEqual(type(seasons_list[0][0]), int)
+        self.assertEqual(type(seasons_list[0][2]), int)
 
-        pass
+        
 
     def test_winners_since_search(self):
+        dic = winners_since_search(1999, self.cur2, self.conn2)
+        self.assertEqual(type(dic), dict)
+        self.assertEqual(dic['Manchester City FC'], 5)
+        self.assertEqual(dic['Manchester United FC'], 8)
 
-        pass
+        
+        
 
 
 def main():
