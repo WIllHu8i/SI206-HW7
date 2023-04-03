@@ -71,13 +71,25 @@ def make_players_table(data, cur, conn):
         position.append(positionn)
         year.append(yearr)
         nationality.append(nationalityy)
-
     cur.execute('CREATE TABLE IF NOT EXISTS Players ( id INT PRIMARY KEY, name TEXT, position_id INT,birthyear INT,nationality TEXT  )')
     conn.commit()
     for i in range(len(id_)):
+        posi = position[i]
+        if posi == "Goalkeeper":
+            posi_id = 0
+        elif posi == "Defence":
+            posi_id = 1
+        elif posi == "Midfield":
+            posi_id = 2
+        elif posi == "Offence":
+            posi_id = 3
+        else:
+            posi_id = 4
+
         cur.execute('''
         INSERT INTO Players (id, name,position_id,birthyear,nationality  ) VALUES(?,?,?,?,?)
-        ''',(id_[i],name[i],position[i],year[i],nationality[i]))
+        ''',(id_[i],name[i],posi_id,year[i],nationality[i]))
+
     conn.commit()
     cur.close()
     conn.close()
